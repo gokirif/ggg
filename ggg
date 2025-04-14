@@ -1,0 +1,92 @@
+    подключить бд
+    public class AppConfig : DbContext
+    {
+        public AppConfig() : base("Data Source=DESKTOP-BV3N093\\SQLEXPRESS;Initial Catalog=bilet1;Integrated Security=True;Encrypt=False") { }
+
+        public DbSet<Clients> Clients { get; set; }
+        public DbSet<Services> Services { get; set; }
+        public DbSet<Visits> Visits { get; set; }
+    }
+
+    пример модели
+        public class Clients
+    {
+        public int Id {  get; set; }
+        public string Name { get; set; }
+        public int phoneNumber {  get; set; }
+    }
+
+    заполнить датагрид
+    using (var db = new AppConfig())
+     {
+        var list = db.Clients.ToList();
+         dataGridView1.DataSource = list;
+     }
+
+    сохранить в бд
+        string input = textBox2.Text;
+        using (var db = new AppConfig())
+        {
+            var client = new Model.Clients
+             {
+                 Name = textBox1.Text,
+                 phoneNumber = int.Parse(input)
+             };
+
+        db.Clients.Add(client);
+        db.SaveChanges();
+        }
+    
+    сделать грид кликабельным
+        if (e.RowIndex >= 0) 
+    {
+        var selectedRow = dataGridView1.Rows[e.RowIndex];
+
+        int clientId = Convert.ToInt32(selectedRow.Cells["Id"].Value);
+
+        var result = MessageBox.Show("Вы уверены, что хотите удалить эту запись?", "Подтверждение удаления", MessageBoxButtons.YesNo);
+
+        if (result == DialogResult.Yes)
+        {
+            DeleteClient(clientId);  // Удаляем клиента из базы данных
+            MessageBox.Show("Запись успешно удалена.");
+        }
+    }
+
+    удалить из бд
+        using (var db = new AppConfig())
+    {
+        var clientToDelete = db.Clients.FirstOrDefault(c => c.Id == clientId);
+        
+        if (clientToDelete != null)
+        {
+            db.Clients.Remove(clientToDelete);
+            db.SaveChanges();
+        }
+    }
+    
+    получить все данные из таблицы
+    using (var db = new AppConfig())
+{
+    List<Clients> clients = db.Clients.ToList();
+
+    foreach (var client in clients)
+    {
+        Console.WriteLine($"{client.Id} - {client.Name} - {client.phoneNumber}");
+    }
+}
+
+    получение из бд по условию
+    using (var db = new AppConfig())
+{
+    var client = db.Clients.FirstOrDefault(c => c.Name == "Иван");
+
+    if (client != null)
+    {
+        Console.WriteLine($"Найден: {client.Name}, Телефон: {client.phoneNumber}");
+    }
+    else
+    {
+        Console.WriteLine("Клиент не найден");
+    }
+}
